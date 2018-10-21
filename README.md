@@ -102,7 +102,7 @@ python object_detection/export_inference_graph.py --input_type=image_tensor --pi
 ```
 An example will be
 ```
-python object_detection/export_inference_graph.py --input_type=image_tensor --pipeline_config_path=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/faster_rcnn_resnet101_coco.config --trained_checkpoint_prefix=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/CP/model.ckpt-2000 --output_directory=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/IG
+python object_detection/export_inference_graph.py --input_type=image_tensor --pipeline_config_path=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/mask_rcnn_inception_v2_coco.config --trained_checkpoint_prefix=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/CP/model.ckpt-2000 --output_directory=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/IG
 ```
 **Bonus: If you want to train your model using Google Colab then check out the *train.ipynb* file**
 
