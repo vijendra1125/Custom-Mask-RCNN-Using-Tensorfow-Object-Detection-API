@@ -48,10 +48,10 @@ Once you have the labelImg library downloaded on your PC, run lableImg.py. Selec
 ![screenshot 2018-10-02 01 08 08](https://user-images.githubusercontent.com/5885636/46311801-eb8c8080-c5e0-11e8-8444-aa45e39b1414.png)
 ##### Generating masks using the PixelAnnotationTool library
 I will be adding detailed steps for using this tool but for now I hope [this video](https://www.youtube.com/watch?v=wxi2dInWDnI) should work. This tool will generate three files in you image folder
-  - <image name>_colored_mask.png
-  - <image name>_mask.png
-  - <image name>_watershed_mask.png. 
-You need to take all <image name>_watershed_mask.png and palce it in dataset/Annotations/masks folder and then rename ist from <image name>_watershed_mask.png to <image_name>.png
+  - IMAGENAME_colored_mask.png
+  - IMAGENAME_mask.png
+  - IMAGENAME_watershed_mask.png. 
+You need to take all <image name>_watershed_mask.png and palce it in dataset/Annotations/masks folder and then rename ist from IMAGENAME_watershed_mask.png to IMAGENAME.png
 
 #### Setup Tensorflow models repository 
 Now it's time when we will start using Tensorflow object detection API so go ahead and clone it using the following command
