@@ -83,7 +83,7 @@ python object_detection/dataset_tools/create_pascal_tf_record.py -h
 ```
 An example will be:
 ```
-Python object_detection/dataset_tools/create_pascal_tf_record.py --data_dir=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/dataset --annotations_dir=Annotations --image_dir=JPEGImages --output_dir=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/dataset/train.record --label_map_path=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/dataset/label.pbtxt
+Python object_detection/dataset_tools/create_mask_rcnn_tf_record.py --data_dir=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/dataset --annotations_dir=Annotations --image_dir=JPEGImages --output_dir=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/dataset/train.record --label_map_path=/Users/vijendra1125/Documents/tensorflow/object_detection/multi_object_mask/dataset/label.pbtxt
 ```
 
 
