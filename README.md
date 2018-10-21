@@ -51,7 +51,8 @@ I will be adding detailed steps for using this tool but for now I hope [this vid
   - IMAGENAME_colored_mask.png
   - IMAGENAME_mask.png
   - IMAGENAME_watershed_mask.png. 
-You need to take all <image name>_watershed_mask.png and palce it in dataset/Annotations/masks folder and then rename ist from IMAGENAME_watershed_mask.png to IMAGENAME.png
+
+You need to take all IMAGENAME_watershed_mask.png and palce it in dataset/Annotations/masks folder and then rename ist from IMAGENAME_watershed_mask.png to IMAGENAME.png
 
 #### Setup Tensorflow models repository 
 Now it's time when we will start using Tensorflow object detection API so go ahead and clone it using the following command
