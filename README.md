@@ -29,7 +29,7 @@ A sample project to build a custom Mask RCNN model using Tensorflow object detec
 ## Steps
 
 #### Create folders
-Create the folders following the structure given above (You could use a different name for any of the folders except xmls and masks, if you are changing these two names then you will have to make respective chnages in extra/create_mask_rcnn_tf_record.py
+Create the folders following the structure given above (You could use a different name for any of the folders except xmls and masks, if you are changing these two names then you will have to make respective changes in extra/create_mask_rcnn_tf_record.py
 
 
 #### Prepare train and test images
@@ -47,7 +47,7 @@ Now its time to label the training data. We will be doing it using the [labelImg
 Once you have the labelImg library downloaded on your PC, run lableImg.py. Select *JPEGImages* directory by clicking on *Open Dir* and change the save directory to *Annotations* by clicking on *Change Save Dir*. Now all you need to do is to draw rectangles around the object you are planning to detect. You will need to click on *Create RectBox* and then you will get the cursor to label the objects. After drawing rectangles around objects, give the name for the label and save it so that Annotations will get saved as the .xml file in *Annotations* folder.
 ![screenshot 2018-10-02 01 08 08](https://user-images.githubusercontent.com/5885636/46311801-eb8c8080-c5e0-11e8-8444-aa45e39b1414.png)
 ##### Generating masks using PixelAnnotationTool library
-I will be adding a detatiled steps for using this tool but for now I hope [this video](workhttps://www.youtube.com/watch?v=wxi2dInWDnI) should work.
+I will be adding detailed steps for using this tool but for now I hope [this video](https://www.youtube.com/watch?v=wxi2dInWDnI) should work.
 
 #### Setup Tensorflow models repository 
 Now it's time when we will start using Tensorflow object detection API so go ahead and clone it using the following command
@@ -66,9 +66,9 @@ Now your Environment is all set to use Tensorlow object detection API
 
 
 #### Convert the data to Tensorflow record format
-In order to use Tensorflow API, you need to feed data in Tensorflow record format. I modified the script *create_pet_tf_record.py* given by tensorflow and I have placed same in this repository inside the folder named as *extra* and the name of modified file is given as *create_mask_rcnn_tf_record.py*. All you need to do is to take this script and place it in the models/reserach/object_detection/dataset_tools. 
-One additional thing you need to do it to edit the dictionary in the script at line 57. You need to give name of the classes you had given while labeling your data using labelImage as key and the value of pixel for the colour of mask you have choosen for respective class while masking the classobjects using pisxelAnnotationTool as value.
-After doing all this, one last thing is still remaining before we get our Tensorflow record file. You need to create  a file for label map, in this repo its *label.pbtxt*, with the dictionary of the label and the id of objects. Check *label.pbtxt* given in the repository to undestand the format, its pretty simple (Note: name of the label should be same as what you had given while labeling object using the labelImg). Now it time to create record file. From models/research as present working directory run the following command to create Tensorflow record:
+In order to use Tensorflow API, you need to feed data in Tensorflow record format. I have modified the script *create_pet_tf_record.py* given by Tensorflow and I have placed the same in this repository inside the folder named as *extra*. Name of the modified file is given as *create_mask_rcnn_tf_record.py*. All you need to do is to take this script and place it in the models/research/object_detection/dataset_tools. 
+One additional thing you need to do it to edit the dictionary in the script at line 57. You need to the give name of the classes you had given while labeling your data using labelImage as key and the value of pixel for the colour of mask you have chosen for respective class while masking the classobjects using pisxelAnnotationTool as value.
+After doing all this, one last thing is still remaining before we get our Tensorflow record file. You need to create  a file for label map, in this repo its *label.pbtxt*, with the dictionary of the label and the id of objects. Check *label.pbtxt* given in the repository to understand the format, its pretty simple (Note: name of the label should be same as what you had given while labeling object using the labelImg). Now it time to create record file. From models/research as present working directory run the following command to create Tensorflow record:
 ```
 python object_detection/dataset_tools/create_mask_rcnn_tf_record.py --data_dir=<path_to_your_dataset_directory> --annotations_dir=<name_of_annotations_directory> --image_dir=<name_of_annotations_directory> --output_path=<path_where_you_want_record_file_to_be_saved> --label_map_path=<path_of_label_map_file>
 ```
