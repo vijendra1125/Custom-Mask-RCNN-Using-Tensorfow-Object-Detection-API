@@ -1,0 +1,26 @@
+<annotation>
+	<folder>JPEGImages</folder>
+	<filename>image31.jpg</filename>
+	<path>/Users/vijendra1125/Documents/tensorflow/object_detection/dataset2/JPEGImages/image31.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>384</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>cup</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>180</xmin>
+			<ymin>114</ymin>
+			<xmax>251</xmax>
+			<ymax>186</ymax>
+		</bndbox>
+	</object>
+</annotation>

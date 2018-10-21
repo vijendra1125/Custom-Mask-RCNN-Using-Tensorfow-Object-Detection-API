@@ -1,0 +1,26 @@
+<annotation>
+	<folder>JPEGImages</folder>
+	<filename>image10.jpg</filename>
+	<path>/Users/vijendra1125/Documents/tensorflow/object_detection/dataset2/JPEGImages/image10.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>384</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>speaker</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>112</xmin>
+			<ymin>323</ymin>
+			<xmax>182</xmax>
+			<ymax>400</ymax>
+		</bndbox>
+	</object>
+</annotation>
