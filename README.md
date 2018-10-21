@@ -47,6 +47,7 @@ Now its time to label the training data. We will be doing it using the [labelImg
 Once you have the labelImg library downloaded on your PC, run lableImg.py. Select *JPEGImages* directory by clicking on *Open Dir* and change the save directory to *Annotations* by clicking on *Change Save Dir*. Now all you need to do is to draw rectangles around the object you are planning to detect. You will need to click on *Create RectBox* and then you will get the cursor to label the objects. After drawing rectangles around objects, give the name for the label and save it so that Annotations will get saved as the .xml file in *Annotations* folder.
 ![screenshot 2018-10-02 01 08 08](https://user-images.githubusercontent.com/5885636/46311801-eb8c8080-c5e0-11e8-8444-aa45e39b1414.png)
 ##### Generating masks using PixelAnnotationTool library
+I will be adding a detatiled steps for using this tool but for now I hope [this video](workhttps://www.youtube.com/watch?v=wxi2dInWDnI) should work.
 
 #### Setup Tensorflow models repository 
 Now it's time when we will start using Tensorflow object detection API so go ahead and clone it using the following command
