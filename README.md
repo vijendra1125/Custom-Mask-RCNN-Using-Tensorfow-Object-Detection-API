@@ -47,6 +47,7 @@ I will be adding detailed steps for using this tool but for now I hope [this vid
 You need to take all IMAGENAME_color_mask.png and place it in the dataset/Annotations folder and then rename it from IMAGENAME_color_mask.png to IMAGENAME.png
 
 Color mask will look like this:
+
 ![image17](https://user-images.githubusercontent.com/5885636/47310389-96c6ad80-d654-11e8-9516-054566d947d9.png)
 
 #### Setup Tensorflow models repository 
