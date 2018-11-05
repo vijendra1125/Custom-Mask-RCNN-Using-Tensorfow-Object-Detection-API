@@ -1,4 +1,4 @@
-# Tensorfow_Object_detection_API-Custom_Mask_RCNN
+# Custom Mask RCNN using Tensorfow Object detection API
 A sample project to build a custom Mask RCNN model using Tensorflow object detection API
 
 ## Folder Structure
