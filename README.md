@@ -39,7 +39,8 @@ Once you have captured images, transfer it to your PC and resize it to a smaller
 
 #### Label the data
 Now its time to label the training data. We will be doing it using the [Pixel Annotation Tool](https://github.com/abreheret/PixelAnnotationTool). 
-I will be adding detailed steps for using this tool but for now I hope [this video](https://www.youtube.com/watch?v=wxi2dInWDnI) should work. This tool will generate three files in the image folder
+You could find my tutorial on pixel annotaion tool [here](https://www.youtube.com/watch?v=tX-xcg5wY4U). 
+This tool will generate three files in the image folder
   - IMAGENAME_color_mask.png
   - IMAGENAME_mask.png
   - IMAGENAME_watershed_mask.png. 
