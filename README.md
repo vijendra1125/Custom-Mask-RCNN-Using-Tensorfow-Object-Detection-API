@@ -7,6 +7,8 @@ A sample project to build a custom Mask RCNN model using Tensorflow object detec
     - *downloaded files for the choosen pre-trained model will come here* 
   - dataset
     - Annotations
+        - xmls 
+          - *files with bounding box annotations will come here (needed only when handling case where images have multiple object of the same class in the scene)*
         - *maskss for training images will come here*
     - JPEGImages
       - *all of images for training will come here*
@@ -70,7 +72,14 @@ Now your Environment is all set to use Tensorlow object detection API
 #### Convert the data to Tensorflow record format
 In order to use Tensorflow API, you need to feed data in Tensorflow record format. I have modified the script *create_pet_tf_record.py* given by Tensorflow and I have placed the same in this repository inside the folder named as *extra*. Name of the modified file is given as *create_mask_rcnn_tf_record.py*. All you need to do is to take this script and place it in the models/research/object_detection/dataset_tools.
 
-_Note: create_mask_rcnn_tf_record.py is modified in such a way that given a mask image, it should found bounding box around objects on it owns and hence you don't need to spend extra time annotating bounding boxes but it comes at a cost, if mask image has multiple objects of same class then it will not be able to find bounding box for each object of the same class rather it will take a bounding box encompassing all objects of that class. If you have multiple objects of the same class in some images then use some tool like labelImg to generate xml files with bounding boxes and then modify create_mask_rcnn_tf_record.py to take bounding box from xml file instead of trying to find it from mask image._
+_Note: create_mask_rcnn_tf_record.py is modified in such a way that given a mask image, it should found bounding box around objects on it owns and hence you don't need to spend extra time annotating bounding boxes but it comes at a cost, if mask image has multiple objects of same class then it will not be able to find bounding box for each object of the same class rather it will take a bounding box encompassing all objects of that class. 
+
+If you have multiple objects of the same class in some images then use [labelImg library](https://pypi.org/project/labelImg/) to generate xml files with bounding boxes and then place all the xml file generated from labelImg under Annotations/xmls folder. once you have bounding box annotation in xml files use create_mask_rcnn_tf_record_multi.py to convert the data to tensorflow record format.
+
+To download labelImg library along with its dependencies go to [THIS LINK](https://github.com/tzutalin/labelImg). 
+Once you have the labelImg library downloaded on your PC, run lableImg.py. Select *JPEGImages* directory by clicking on *Open Dir* and change the save directory to *Annotations/xmls* by clicking on *Change Save Dir*. Now all you need to do is to draw rectangles around the object you are planning to detect. You will need to click on *Create RectBox* and then you will get the cursor to label the objects. After drawing rectangles around objects, give the name for the label and save it so that Annotations will get saved as the .xml file in *Annotations/xmls* folder._
+
+![screenshot 2018-10-02 01 08 08](https://user-images.githubusercontent.com/5885636/46311801-eb8c8080-c5e0-11e8-8444-aa45e39b1414.png)
 
 One additional thing you need to do it to edit the dictionary in the script at line 57. You need to the give name of the classes as key and the value of pixel for the colour of mask you have chosen for respective class while masking the classobjects using pisxelAnnotationTool as value.
 After doing above, one last thing is still remaining before we get our Tensorflow record file. You need to create  a file for label map, in this repo its *label.pbtxt*, with the dictionary of the label and the id of objects. Check *label.pbtxt* given in the repository to understand the format, its pretty simple (Note: name of the label should be same as class names you had given in the dictionary). Now it time to create record file. From models/research as present working directory run the following command to create Tensorflow record:
