@@ -13,17 +13,18 @@
 # limitations under the License.
 # ==============================================================================
 
-r"""Convert the Oxford pet dataset to TFRecord for object_detection.
+r"""Convert your custom dataset to TFRecord for object_detection.
 
-See: O. M. Parkhi, A. Vedaldi, A. Zisserman, C. V. Jawahar
-     Cats and Dogs
-     IEEE Conference on Computer Vision and Pattern Recognition, 2012
-     http://www.robots.ox.ac.uk/~vgg/data/pets/
+Base of this script is create_pet_tf_record.py
+    provided by tensorflow repository on github
+create_pet_tf_record.py could be found under
+    tensorflow/models/research/object_detection/dataset_tools
 
 Example usage:
-    python object_detection/dataset_tools/create_pet_tf_record.py \
-        --data_dir=/home/user/pet \
-        --output_dir=/home/user/pet/output
+  Python object_detection/dataset_tools/create_mask_rcnn_tf_record.py 
+    --data_dir=/Users/xyz/myProject/dataset --masks_dir=Annotations 
+    --images_dir=JPEGImages --output_dir=/Users/xyz/myProject/dataset 
+    --label_map_path=/Users/xyz/myProject/dataset/label.pbtxt
 """
 
 import hashlib
@@ -34,7 +35,6 @@ import random
 import re
 
 import contextlib2
-from lxml import etree
 import numpy as np
 import PIL.Image
 import tensorflow as tf
@@ -45,32 +45,28 @@ from object_detection.utils import label_map_util
 
 flags = tf.app.flags
 flags.DEFINE_string('data_dir', '', 'Path to root directory to dataset.')
+flags.DEFINE_string('images_dir', 'JPEGImages', 'Name of the directory contatining images')
+flags.DEFINE_string('masks_dir', 'Annotations', 'Name of the directory contatining masks')
 flags.DEFINE_string('output_dir', '', 'Path to directory to output TFRecords.')
-flags.DEFINE_string('image_dir', 'JPEGImages', 'Name of the directory contatining images')
-flags.DEFINE_string('annotations_dir', 'Annotations', 'Name of the directory contatining Annotations')
 flags.DEFINE_string('label_map_path', '', 'Path to label map proto')
 flags.DEFINE_integer('num_shards', 1, 'Number of TFRecord shards')
 FLAGS = flags.FLAGS
 
-# mask_pixel: dictionary containing class name and value for pixels belog to mask of each class
-# change as per your classes and labeling
-mask_pixel = {'speaker':76, 'cup':26}
+def image_to_tf_example(img_path, 
+                        mask_path,
+                        label_map_dict,
+                        filename):
+  """Convert image and mask to tf.Example proto.
 
-def dict_to_tf_example(filename,
-                       mask_path,
-                       label_map_dict,
-                       img_path):
-  """Convert XML derived dict to tf.Example proto.
-
-  Notice that this function normalizes the bounding box coordinates provided
-  by the raw data.
+  Note: that this function doesnt give correct output if an image contains 
+    more than one object from same class
 
   Args:
-    filename: name of the image 
+    img_path: String specifying subdirectory within the
+      dataset directory holding the actual image data.
     mask_path: String path to PNG encoded mask.
     label_map_dict: A map from string label names to integers ids.
-    image_subdirectory: String specifying subdirectory within the
-      dataset directory holding the actual image data.
+    filename: name of the image 
 
 
   Returns:
@@ -82,8 +78,8 @@ def dict_to_tf_example(filename,
   with tf.gfile.GFile(img_path, 'rb') as fid:
     encoded_jpg = fid.read()
   encoded_jpg_io = io.BytesIO(encoded_jpg)
-  image = PIL.Image.open(encoded_jpg_io)
-  width = np.asarray(image).shape[1]
+  image  = PIL.Image.open(encoded_jpg_io)
+  width  = np.asarray(image).shape[1]
   height = np.asarray(image).shape[0]
   if image.format != 'JPEG':
     raise ValueError('Image format not JPEG')
@@ -103,15 +99,13 @@ def dict_to_tf_example(filename,
   ymaxs = []
   classes = []
   classes_text = []
-  truncated = []
-  poses = []
-  difficult_obj = []
-  masks = []
+  encoded_mask_png_list = []
 
-  for k in list(mask_pixel.keys()):
-      class_name = k
-      nonbackground_indices_x = np.any(mask_np == mask_pixel[class_name], axis=0)
-      nonbackground_indices_y = np.any(mask_np == mask_pixel[class_name], axis=1)
+  for key in label_map_dict.keys():
+      class_name = key
+      pixel_val = int(label_map_dict[class_name][1])
+      nonbackground_indices_x = np.any(mask_np == pixel_val, axis=0)
+      nonbackground_indices_y = np.any(mask_np == pixel_val, axis=1)
       nonzero_x_indices = np.where(nonbackground_indices_x)
       nonzero_y_indices = np.where(nonbackground_indices_y)
 
@@ -128,103 +122,94 @@ def dict_to_tf_example(filename,
         ymaxs.append(ymax / height)
         
         classes_text.append(class_name.encode('utf8'))
-        classes.append(label_map_dict[class_name])
+        classes.append(label_map_dict[class_name][0])
 
-        mask_remapped = (mask_np == mask_pixel[class_name]).astype(np.uint8)
-        masks.append(mask_remapped)
+        mask_remapped = (mask_np == pixel_val).astype(np.uint8)
+        img = PIL.Image.fromarray(mask_remapped)
+        output = io.BytesIO()
+        img.save(output, format='PNG')
+        encoded_mask_png_list.append(output.getvalue())
 
   feature_dict = {
-      'image/height': dataset_util.int64_feature(height),
-      'image/width': dataset_util.int64_feature(width),
-      'image/filename': dataset_util.bytes_feature(
-          filename.encode('utf8')),
-      'image/source_id': dataset_util.bytes_feature(
-          filename.encode('utf8')),
-      'image/key/sha256': dataset_util.bytes_feature(key.encode('utf8')),
-      'image/encoded': dataset_util.bytes_feature(encoded_jpg),
-      'image/format': dataset_util.bytes_feature('jpeg'.encode('utf8')),
-      'image/object/bbox/xmin': dataset_util.float_list_feature(xmins),
-      'image/object/bbox/xmax': dataset_util.float_list_feature(xmaxs),
-      'image/object/bbox/ymin': dataset_util.float_list_feature(ymins),
-      'image/object/bbox/ymax': dataset_util.float_list_feature(ymaxs),
-      'image/object/class/text': dataset_util.bytes_list_feature(classes_text),
+      'image/height':             dataset_util.int64_feature(height),
+      'image/width':              dataset_util.int64_feature(width),
+      'image/filename':           dataset_util.bytes_feature(filename.encode('utf8')),
+      'image/source_id':          dataset_util.bytes_feature(filename.encode('utf8')),
+      'image/key/sha256':         dataset_util.bytes_feature(key.encode('utf8')),
+      'image/encoded':            dataset_util.bytes_feature(encoded_jpg),
+      'image/format':             dataset_util.bytes_feature('jpeg'.encode('utf8')),
+      'image/object/bbox/xmin':   dataset_util.float_list_feature(xmins),
+      'image/object/bbox/xmax':   dataset_util.float_list_feature(xmaxs),
+      'image/object/bbox/ymin':   dataset_util.float_list_feature(ymins),
+      'image/object/bbox/ymax':   dataset_util.float_list_feature(ymaxs),
+      'image/object/class/text':  dataset_util.bytes_list_feature(classes_text),
       'image/object/class/label': dataset_util.int64_list_feature(classes),
-      'image/object/difficult': dataset_util.int64_list_feature(difficult_obj),
-      'image/object/truncated': dataset_util.int64_list_feature(truncated),
-      'image/object/view': dataset_util.bytes_list_feature(poses),
-  }
-
-  encoded_mask_png_list = []
-  for mask in masks:
-    img = PIL.Image.fromarray(mask)
-    output = io.BytesIO()
-    img.save(output, format='PNG')
-    encoded_mask_png_list.append(output.getvalue())
-  feature_dict['image/object/mask'] = (dataset_util.bytes_list_feature(encoded_mask_png_list))
-
-  example = tf.train.Example(features=tf.train.Features(feature=feature_dict))
-  return example
+      'image/object/mask': (dataset_util.bytes_list_feature(encoded_mask_png_list))}
+  tf_data = tf.train.Example(features=tf.train.Features(feature=feature_dict))
+  return tf_data
 
 
-def create_tf_record(output_filename,
-                     num_shards,
+def create_tf_record(image_dir_path,
+                     mask_dir_path,
+                     output_dir_path,
                      label_map_dict,
-                     annotations_dir,
-                     image_dir,
-                     examples):
-  """Creates a TFRecord file from examples.
+                     images_filename,
+                     num_shards):
+  """Creates a TFRecord file from data.
 
   Args:
-    output_filename: Path to where output file is saved.
-    num_shards: Number of shards for output file.
+    image_dir_path: Directory where image files are stored.
+    mask_dir_path: Directory where annotation files are stored.
+    output_dir_path: Path to where output file is saved.
     label_map_dict: The label map dictionary.
-    annotations_dir: Directory where annotation files are stored.
-    image_dir: Directory where image files are stored.
-    examples: Examples to parse and save to tf record.
+    images_filename: Examples to parse and save to tf record.
+    num_shards: Number of shards for output file.
   """
   with contextlib2.ExitStack() as tf_record_close_stack:
+    output_filename  = os.path.join(output_dir_path, 'data')
     output_tfrecords = tf_record_creation_util.open_sharded_output_tfrecords(
         tf_record_close_stack, output_filename, num_shards)
-    for idx, example in enumerate(examples):
+    for idx, filename in enumerate(images_filename):
       if idx % 100 == 0:
-        logging.info('On image %d of %d', idx, len(examples))
-      mask_path = os.path.join(annotations_dir, example + '.png')
-      image_path = os.path.join(image_dir, example + '.jpg')
-
+        logging.info('On image %d of %d', idx, len(images_filename))
+      mask_path = os.path.join(mask_dir_path, filename + '.png')
+      image_path = os.path.join(image_dir_path, filename + '.jpg')
       try:
-        tf_example = dict_to_tf_example(example,
+        tf_example = image_to_tf_example(image_path,
                                         mask_path,
                                         label_map_dict,
-                                        image_path)
+                                        filename)
         if tf_example:
           shard_idx = idx % num_shards
           output_tfrecords[shard_idx].write(tf_example.SerializeToString())
-          print("done")
+          logging.info('done')
       except ValueError:
-        logging.warning('Invalid example: %s, ignoring.', xml_path)
+        logging.warning('Invalid example: %s, ignoring.', image_path)
 
 def main(_):
-  data_dir = FLAGS.data_dir
-  train_output_path = FLAGS.output_dir
-  image_dir = os.path.join(data_dir, FLAGS.image_dir)
-  annotations_dir = os.path.join(data_dir, FLAGS.annotations_dir)
-  label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)
+  data_dir_path     = FLAGS.data_dir
+  images_dir_path   = os.path.join(data_dir_path, FLAGS.images_dir)
+  masks_dir_path    = os.path.join(data_dir_path, FLAGS.masks_dir)
+  tfrecord_dir_path = FLAGS.output_dir
+  label_map_dict    = label_map_util.get_label_map_dict(FLAGS.label_map_path)
+  for key in label_map_dict.keys():
+    label_map_dict[key] = [label_map_dict[key], key[-3:]]
+    label_map_dict[key[:-3]] = label_map_dict.pop(key)
 
   logging.info('Reading from dataset.')
-  examples_list = os.listdir(image_dir) 
-  for el in examples_list:
-    if el[-3:] !='jpg':
-      del examples_list[examples_list.index(el)]
-  for el in examples_list:  
-    examples_list[examples_list.index(el)] = el[0:-4]
+  images_filename = os.listdir(images_dir_path) 
+  for filename in images_filename:
+    if filename[-3:] !='jpg':
+      del images_filename[images_filename.index(filename)]
+  for filename in images_filename:  
+    images_filename[images_filename.index(filename)] = filename[0:-4]
 
-  create_tf_record(train_output_path,
-                  FLAGS.num_shards,
-                  label_map_dict,
-                  annotations_dir,
-                  image_dir,
-                  examples_list)
-
+  create_tf_record(images_dir_path,
+                   masks_dir_path,
+                   tfrecord_dir_path,
+                   label_map_dict,
+                   images_filename,
+                   FLAGS.num_shards)
 
 if __name__ == '__main__':
   tf.app.run()
