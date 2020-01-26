@@ -232,9 +232,10 @@ def main(_):
   images_dir_path = os.path.join(data_dir_path, FLAGS.images_dir)
   annotations_dir_path = os.path.join(data_dir_path, FLAGS.annotations_dir)
   tfrecord_dir_path = FLAGS.data_dir_path
-  label_map_dict = label_map_util.get_label_map_dict(FLAGS.label_map_path)
-  for key in label_map_dict.keys():
-    label_map_dict[key] = [label_map_dict[key], key[-3:]]
+  label_map_dict_temp = label_map_util.get_label_map_dict(FLAGS.label_map_path)
+  label_map_dict = label_map_dict_temp.copy()
+  for key in label_map_dict_temp.keys():
+    label_map_dict[key] = [label_map_dict_temp[key], key[-3:]]
     label_map_dict[key[:-3]] = label_map_dict.pop(key)
 
   logging.info('Reading from dataset.')
@@ -245,11 +246,11 @@ def main(_):
   for filename in images_filename:  
     images_filename[images_filename.index(filename)] = filename[0:-4]
 
-  create_tf_record(images_dir_path,
+  '''create_tf_record(images_dir_path,
                    annotations_dir_path,
                    tfrecord_dir_path,
                    label_map_dict,
-                   images_filename)
+                   images_filename)'''
 
 if __name__ == '__main__':
   tf.app.run()
