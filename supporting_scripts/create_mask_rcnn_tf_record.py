@@ -246,11 +246,11 @@ def main(_):
   for filename in images_filename:  
     images_filename[images_filename.index(filename)] = filename[0:-4]
 
-  '''create_tf_record(images_dir_path,
+  create_tf_record(images_dir_path,
                    annotations_dir_path,
                    tfrecord_dir_path,
                    label_map_dict,
-                   images_filename)'''
+                   images_filename)
 
 if __name__ == '__main__':
   tf.app.run()
