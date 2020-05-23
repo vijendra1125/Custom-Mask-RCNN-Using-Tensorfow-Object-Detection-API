@@ -13,24 +13,23 @@
 # limitations under the License.
 # ==============================================================================
 
-r"""Convert your custom dataset to TFRecord for object_detection.
+r"""
+Convert your custom dataset to TFRecord for object_detection.
 
-Base of this script is create_pet_tf_record.py
-    provided by tensorflow repository on github
-create_pet_tf_record.py could be found under
-    tensorflow/models/research/object_detection/dataset_tools
+Base of this script is create_pet_tf_record.py provided by tensorflow repository on github
+create_pet_tf_record.py could be found under tensorflow/models/research/object_detection/dataset_tools
 
-Example usage:
+Minimal Example usage:
   Python object_detection/dataset_tools/create_mask_rcnn_tf_record.py
     --data_dir_path=<path to directory containing dataset>
-    --use_xmls=<true if you are providing bounding box annoations as xml file>
-    --num_shrads=<number of tfrecord file in which you want to split your data>
+    --bboxes_provided=<True if you are providing bounding box annoations as xml file>
 """
 
 import hashlib
 import io
 import logging
 import os
+import sys
 
 import contextlib2
 import numpy as np
@@ -42,10 +41,19 @@ from object_detection.dataset_tools import tf_record_creation_util
 from object_detection.utils import dataset_util
 from object_detection.utils import label_map_util
 
+
 flags = tf.app.flags
 flags.DEFINE_string('data_dir_path', '', 'Path to root directory to dataset.')
-flags.DEFINE_bool('use_xmls', True,
+flags.DEFINE_bool('bboxes_provided', None,
                   'True if xmls with bouding box is provided')
+flags.DEFINE_string('images_dir', 'train_images',
+                    'Name of directory containing images')
+flags.DEFINE_string('masks_dir', 'train_masks',
+                    'Name of directory containing masks corresponding to images')
+flags.DEFINE_string('bboxes_dir', 'train_bboxes',
+                    'Name of directory containing bboxes annotations corresponding to images')
+flags.DEFINE_string('tfrecord_filename', 'train_data',
+                    'Name of the generated TFRecord file')
 flags.DEFINE_integer('num_shards', 1, 'Number of TFRecord shards')
 FLAGS = flags.FLAGS
 
@@ -61,12 +69,11 @@ def image_to_tf_data(img_path,
         then xmls files with bounding box annotation need to be provided
 
     Args:
-      img_path: String specifying subdirectory within the
-        dataset directory holding the actual image data.
+      img_path: String specifying subdirectory within the dataset directory holding the actual image data.
       mask_path: String path to PNG encoded mask.
       xml_path: String path to XML file holding bounding box annotations
       label_map_dict: A map from string label names to integers ids.
-      filename: name of the image
+      filename: Name of the image
 
     Returns:
       example: The converted tf.tf_data
@@ -101,7 +108,7 @@ def image_to_tf_data(img_path,
     ymaxs = []
     encoded_mask_png_list = []
 
-    if(True == FLAGS.use_xmls):
+    if(True == FLAGS.bboxes_provided):
         if not os.path.exists(xml_path):
             logging.warning('Could not find %s, ignoring example.', xml_path)
             return
@@ -233,7 +240,12 @@ def create_tf_record(label_map_dict,
 
 
 def main(_):
-    logging.basicConfig(format='%(levelname)s-%(message)s')
+    # force to pass bboxes_provided flag
+    if FLAGS.bboxes_provided == None:
+        print("ERROR: Please set bboxes_provided flag to True or False")
+        print("INFO: use xmls flag helps the program know if xmls file bounding boxes annotations is provided or not")
+        sys.exit()
+
     # read label mapping
     print('INFO: Reading label mapping')
     label_map_dict_path = os.path.join(FLAGS.data_dir_path, 'label.pbtxt')
@@ -247,10 +259,10 @@ def main(_):
 
     # create tfrecord of data
     create_tf_record(label_map_dict,
-                     'train_images',
-                     'masks',
-                     'bboxes',
-                     'train_data')
+                     FLAGS.images_dir,
+                     FLAGS.masks_dir,
+                     FLAGS.bboxes_dir,
+                     FLAGS.tfrecord_filename)
 
 
 if __name__ == '__main__':
